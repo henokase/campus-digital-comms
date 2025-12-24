@@ -1,0 +1,11 @@
+{
+  "name": "cdcp-backend",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "services/*"
+  ],
+  "scripts": {
+    "test": "npm -ws test"
+  }
+}

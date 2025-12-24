@@ -1,0 +1,103 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.idea/
+*.iml
+*.iws
+*.sublime-project
+*.sublime-workspace
+
+# Compiled files
+/dist/
+/build/
+/out/
+
+# Log files
+/logs/
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Misc
+*.class
+*.log
+*.pyc
+*.sqlite
+*.orig
+*.min.*
+/node_modules/
+/bower_components/
+/coverage/
+
+# IDE configs
+.vscode/
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+*.ini
+*.swp
+*.swo
+
+# Local config
+db/*.db
+
+# External dirs
+/node_modules/
+/bower_components/
+
+# Output dirs
+/dist/
+/build/
+/out/
+/temp/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Intellij IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+*.hprof
+*.pydevproject
+.idea_modules/
+
+# Eclipse
+.project
+.classpath
+.settings/
+.cache/
+
+# NetBeans
+nbproject/private/
+
+# Maven
+.mvn/
+
+# Gradle
+.gradle/
+
+# VSCode
+.vscode/
+

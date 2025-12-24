@@ -1,0 +1,115 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: ${DB_NAME:-cdcp}
+      POSTGRES_USER: ${DB_USER:-cdcp_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-cdcp_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-1234}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  api-gateway:
+    build:
+      context: ./backend/services/api-gateway
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      AUTH_SERVICE_URL: http://auth-service:3001
+      ANNOUNCEMENT_SERVICE_URL: http://announcement-service:3002
+      NOTIFICATION_SERVICE_URL: http://notification-service:3003
+      FEEDBACK_ANALYTICS_SERVICE_URL: http://feedback-analytics-service:3004
+      JWT_SECRET: ${JWT_SECRET:-dVkvg49mcBxHsbiPZ6fEQJ25h8OYFK0j}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+
+  auth-service:
+    build:
+      context: ./backend/services/auth-service
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-cdcp}
+      DB_USER: ${DB_USER:-cdcp_user}
+      DB_PASSWORD: ${DB_PASSWORD:-1234}
+      JWT_SECRET: ${JWT_SECRET:-dVkvg49mcBxHsbiPZ6fEQJ25h8OYFK0j}
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+
+  announcement-service:
+    build:
+      context: ./backend/services/announcement-service
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-cdcp}
+      DB_USER: ${DB_USER:-cdcp_user}
+      DB_PASSWORD: ${DB_PASSWORD:-1234}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://cdcp_user:1234@rabbitmq:5672}
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  notification-service:
+    build:
+      context: ./backend/services/notification-service
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-cdcp}
+      DB_USER: ${DB_USER:-cdcp_user}
+      DB_PASSWORD: ${DB_PASSWORD:-1234}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://cdcp_user:1234@rabbitmq:5672}
+    ports:
+      - "3003:3003"
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  feedback-analytics-service:
+    build:
+      context: ./backend/services/feedback-analytics-service
+    environment:
+      NODE_ENV: development
+      PORT: 3004
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-cdcp}
+      DB_USER: ${DB_USER:-cdcp_user}
+      DB_PASSWORD: ${DB_PASSWORD:-1234}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://cdcp_user:1234@rabbitmq:5672}
+    ports:
+      - "3004:3004"
+    depends_on:
+      - postgres
+      - rabbitmq
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
