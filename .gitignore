@@ -33,7 +33,7 @@ Thumbs.db
 *.sqlite
 *.orig
 *.min.*
-/node_modules/
+*/node_modules/
 /bower_components/
 /coverage/
 
@@ -101,3 +101,8 @@ nbproject/private/
 # VSCode
 .vscode/
 
+
+# Environment variables
+.env
+.env.local
+.env.*.local

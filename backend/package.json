@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "services/*"
+    "services/*",
+    "packages/*"
   ],
   "scripts": {
-    "test": "npm -ws test"
+    "test": "npm -ws test",
+    "prisma:generate": "npm -ws --if-present run prisma:generate",
+    "prisma:migrate": "npm -ws --if-present run prisma:migrate"
   }
 }

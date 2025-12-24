@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:14
@@ -11,9 +9,14 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cdcp_user} -d ${DB_NAME:-cdcp} -h 127.0.0.1 -p 5432"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
 
   rabbitmq:
-    image: rabbitmq:3.12-management
+    image: rabbitmq:3.13-management
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-cdcp_user}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-1234}
@@ -22,6 +25,40 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+
+  db-migrate:
+    image: node:22-alpine
+    working_dir: /app/backend
+    volumes:
+      - ./:/app
+      - backend-node-modules:/app/backend/node_modules
+    environment:
+      DATABASE_URL: "postgresql://${DB_USER:-cdcp_user}:${DB_PASSWORD:-1234}@postgres:5432/${DB_NAME:-cdcp}?schema=public"
+    command: sh -c "apk add --no-cache postgresql-client && until pg_isready -h postgres -p 5432; do sleep 1; done && npm ci && npm run --workspace @cdcp/db prisma:migrate:deploy"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - tools
+
+  prisma-studio:
+    image: node:22-alpine
+    working_dir: /app/backend
+    volumes:
+      - ./:/app
+      - backend-node-modules:/app/backend/node_modules
+    environment:
+      DATABASE_URL: "postgresql://${DB_USER:-cdcp_user}:${DB_PASSWORD:-1234}@postgres:5432/${DB_NAME:-cdcp}?schema=public"
+    command: sh -c "npm ci && npm run --workspace @cdcp/db prisma:studio -- --port 5555 --hostname 0.0.0.0"
+    ports:
+      - "5555:5555"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    profiles:
+      - tools
 
   api-gateway:
     build:
@@ -33,9 +70,16 @@ services:
       ANNOUNCEMENT_SERVICE_URL: http://announcement-service:3002
       NOTIFICATION_SERVICE_URL: http://notification-service:3003
       FEEDBACK_ANALYTICS_SERVICE_URL: http://feedback-analytics-service:3004
-      JWT_SECRET: ${JWT_SECRET:-dVkvg49mcBxHsbiPZ6fEQJ25h8OYFK0j}
+      JWT_SECRET: ${JWT_SECRET:-45678fgchjbklt67y8u}
     ports:
       - "3000:3000"
+    develop:
+      watch:
+        - path: ./backend/services/api-gateway
+          action: sync
+          target: /app
+          ignore:
+            - node_modules/
     depends_on:
       - auth-service
 
@@ -45,14 +89,22 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3001
+      DATABASE_URL: "postgresql://${DB_USER:-cdcp_user}:${DB_PASSWORD:-1234}@postgres:5432/${DB_NAME:-cdcp}?schema=public"
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-cdcp}
       DB_USER: ${DB_USER:-cdcp_user}
       DB_PASSWORD: ${DB_PASSWORD:-1234}
-      JWT_SECRET: ${JWT_SECRET:-dVkvg49mcBxHsbiPZ6fEQJ25h8OYFK0j}
+      JWT_SECRET: ${JWT_SECRET:-45678fgchjbklt67y8u}
     ports:
       - "3001:3001"
+    develop:
+      watch:
+        - path: ./backend/services/auth-service
+          action: sync
+          target: /app
+          ignore:
+            - node_modules/
     depends_on:
       - postgres
 
@@ -62,6 +114,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3002
+      DATABASE_URL: "postgresql://${DB_USER:-cdcp_user}:${DB_PASSWORD:-1234}@postgres:5432/${DB_NAME:-cdcp}?schema=public"
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-cdcp}
@@ -70,6 +123,13 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://cdcp_user:1234@rabbitmq:5672}
     ports:
       - "3002:3002"
+    develop:
+      watch:
+        - path: ./backend/services/announcement-service
+          action: sync
+          target: /app
+          ignore:
+            - node_modules/
     depends_on:
       - postgres
       - rabbitmq
@@ -80,6 +140,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3003
+      DATABASE_URL: "postgresql://${DB_USER:-cdcp_user}:${DB_PASSWORD:-1234}@postgres:5432/${DB_NAME:-cdcp}?schema=public"
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-cdcp}
@@ -88,6 +149,13 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://cdcp_user:1234@rabbitmq:5672}
     ports:
       - "3003:3003"
+    develop:
+      watch:
+        - path: ./backend/services/notification-service
+          action: sync
+          target: /app
+          ignore:
+            - node_modules/
     depends_on:
       - postgres
       - rabbitmq
@@ -98,6 +166,7 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3004
+      DATABASE_URL: "postgresql://${DB_USER:-cdcp_user}:${DB_PASSWORD:-1234}@postgres:5432/${DB_NAME:-cdcp}?schema=public"
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-cdcp}
@@ -106,6 +175,13 @@ services:
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://cdcp_user:1234@rabbitmq:5672}
     ports:
       - "3004:3004"
+    develop:
+      watch:
+        - path: ./backend/services/feedback-analytics-service
+          action: sync
+          target: /app
+          ignore:
+            - node_modules/
     depends_on:
       - postgres
       - rabbitmq
@@ -113,3 +189,4 @@ services:
 volumes:
   postgres-data:
   rabbitmq-data:
+  backend-node-modules:

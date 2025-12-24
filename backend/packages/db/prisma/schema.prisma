@@ -1,0 +1,104 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["auth", "announcements", "notifications", "engagement"]
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String
+  role         String
+  fullName     String?
+  department   String?
+  year         Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@schema("auth")
+}
+
+model Announcement {
+  id             String   @id @default(uuid()) @db.Uuid
+  title          String
+  content        String
+  type           String
+  category       String?
+  priority       String
+  createdBy      String   @db.Uuid
+  targetAudience Json
+  status         String   @default("draft")
+  publishedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  event Event?
+
+  @@schema("announcements")
+}
+
+model Event {
+  id                   String   @id @default(uuid()) @db.Uuid
+  announcementId       String   @unique @db.Uuid
+  eventDate            DateTime
+  location             String
+  capacity             Int?
+  registrationRequired Boolean  @default(false)
+  registrationDeadline DateTime?
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@schema("announcements")
+}
+
+model Notification {
+  id             String   @id @default(uuid()) @db.Uuid
+  announcementId String   @db.Uuid
+  userId         String   @db.Uuid
+  channel        String
+  status         String
+  sentAt         DateTime?
+  readAt         DateTime?
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([announcementId, userId, channel])
+  @@schema("notifications")
+}
+
+model Feedback {
+  id             String   @id @default(uuid()) @db.Uuid
+  announcementId String   @db.Uuid
+  userId         String   @db.Uuid
+  reactionType   String
+  comment        String?
+  rating         Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@schema("engagement")
+}
+
+model AnnouncementMetrics {
+  announcementId   String   @id @db.Uuid
+  notificationsSent Int     @default(0)
+  notificationsRead Int     @default(0)
+  feedbackCount     Int     @default(0)
+  lastUpdatedAt     DateTime @default(now())
+
+  @@schema("engagement")
+}
+
+model ProcessedEvent {
+  eventId    String   @id
+  eventType  String
+  processedAt DateTime @default(now())
+
+  @@schema("engagement")
+}
