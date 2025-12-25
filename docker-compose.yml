@@ -34,7 +34,7 @@ services:
       - backend-node-modules:/app/backend/node_modules
     environment:
       DATABASE_URL: "postgresql://${DB_USER:-cdcp_user}:${DB_PASSWORD:-1234}@postgres:5432/${DB_NAME:-cdcp}?schema=public"
-    command: sh -c "apk add --no-cache postgresql-client && until pg_isready -h postgres -p 5432; do sleep 1; done && npm ci && npm run --workspace @cdcp/db prisma:migrate:deploy"
+    command: sh -c "apk add --no-cache postgresql-client && until pg_isready -h postgres -p 5432; do sleep 1; done && npm install && npm run --workspace @cdcp/db prisma:migrate:deploy"
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,7 +49,7 @@ services:
       - backend-node-modules:/app/backend/node_modules
     environment:
       DATABASE_URL: "postgresql://${DB_USER:-cdcp_user}:${DB_PASSWORD:-1234}@postgres:5432/${DB_NAME:-cdcp}?schema=public"
-    command: sh -c "npm ci && npm run --workspace @cdcp/db prisma:studio -- --port 5555 --hostname 0.0.0.0"
+    command: sh -c "npm install && npm run --workspace @cdcp/db prisma:studio -- --port 5555 --hostname 0.0.0.0"
     ports:
       - "5555:5555"
     depends_on:

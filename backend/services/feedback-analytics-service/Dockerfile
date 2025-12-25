@@ -3,9 +3,9 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+RUN npm install
 
 COPY src ./src
 
-EXPOSE 3004
-CMD ["npm","start"]
+EXPOSE 3002
+CMD ["npm","run","dev"]
