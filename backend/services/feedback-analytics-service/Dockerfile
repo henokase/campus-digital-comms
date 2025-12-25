@@ -7,5 +7,5 @@ RUN npm install
 
 COPY src ./src
 
-EXPOSE 3002
+EXPOSE 3004
 CMD ["npm","run","dev"]
