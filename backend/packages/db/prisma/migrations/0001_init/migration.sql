@@ -40,25 +40,6 @@ CREATE TABLE IF NOT EXISTS "announcements"."Announcement" (
   CONSTRAINT "Announcement_pkey" PRIMARY KEY ("id")
 );
 
--- announcements.Event
-CREATE TABLE IF NOT EXISTS "announcements"."Event" (
-  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-  "announcementId" UUID NOT NULL,
-  "eventDate" TIMESTAMP(3) NOT NULL,
-  "location" TEXT NOT NULL,
-  "capacity" INTEGER,
-  "registrationRequired" BOOLEAN NOT NULL DEFAULT false,
-  "registrationDeadline" TIMESTAMP(3),
-
-  CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
-);
-
-CREATE UNIQUE INDEX IF NOT EXISTS "Event_announcementId_key" ON "announcements"."Event"("announcementId");
-
-ALTER TABLE "announcements"."Event"
-ADD CONSTRAINT "Event_announcementId_fkey" FOREIGN KEY ("announcementId")
-REFERENCES "announcements"."Announcement"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
 -- notifications.Notification
 CREATE TABLE IF NOT EXISTS "notifications"."Notification" (
   "id" UUID NOT NULL DEFAULT gen_random_uuid(),

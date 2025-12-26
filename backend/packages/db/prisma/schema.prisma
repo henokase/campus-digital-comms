@@ -37,22 +37,6 @@ model Announcement {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  event Event?
-
-  @@schema("announcements")
-}
-
-model Event {
-  id                   String   @id @default(uuid()) @db.Uuid
-  announcementId       String   @unique @db.Uuid
-  eventDate            DateTime
-  location             String
-  capacity             Int?
-  registrationRequired Boolean  @default(false)
-  registrationDeadline DateTime?
-
-  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
-
   @@schema("announcements")
 }
 

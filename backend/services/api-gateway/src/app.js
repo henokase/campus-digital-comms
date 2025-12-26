@@ -5,10 +5,11 @@ const { authMiddleware } = require('./middleware/auth');
 const { rbacMiddleware } = require('./middleware/rbac');
 const { forwardRequest } = require('./forwarder');
 
-function requireEnv(name) {
+function getEnv(name, fallback) {
   const v = process.env[name];
-  if (!v) throw new Error(`${name} is required`);
-  return v;
+  if (v) return v;
+  if (fallback) return fallback;
+  throw new Error(`${name} is required`);
 }
 
 function createApp() {
@@ -24,23 +25,23 @@ function createApp() {
   app.use(rbacMiddleware);
 
   app.use('/api/auth', (req, res, next) => {
-    forwardRequest({ req, res, targetBaseUrl: requireEnv('AUTH_SERVICE_URL') }).catch(next);
+    forwardRequest({ req, res, targetBaseUrl: getEnv('AUTH_SERVICE_URL', 'http://localhost:3001') }).catch(next);
   });
 
   app.use('/api/announcements', (req, res, next) => {
-    forwardRequest({ req, res, targetBaseUrl: requireEnv('ANNOUNCEMENT_SERVICE_URL') }).catch(next);
+    forwardRequest({ req, res, targetBaseUrl: getEnv('ANNOUNCEMENT_SERVICE_URL', 'http://localhost:3002') }).catch(next);
   });
 
   app.use('/api/notifications', (req, res, next) => {
-    forwardRequest({ req, res, targetBaseUrl: requireEnv('NOTIFICATION_SERVICE_URL') }).catch(next);
+    forwardRequest({ req, res, targetBaseUrl: getEnv('NOTIFICATION_SERVICE_URL', 'http://localhost:3003') }).catch(next);
   });
 
   app.use('/api/feedback', (req, res, next) => {
-    forwardRequest({ req, res, targetBaseUrl: requireEnv('FEEDBACK_ANALYTICS_SERVICE_URL') }).catch(next);
+    forwardRequest({ req, res, targetBaseUrl: getEnv('FEEDBACK_ANALYTICS_SERVICE_URL', 'http://localhost:3004') }).catch(next);
   });
 
   app.use('/api/analytics', (req, res, next) => {
-    forwardRequest({ req, res, targetBaseUrl: requireEnv('FEEDBACK_ANALYTICS_SERVICE_URL') }).catch(next);
+    forwardRequest({ req, res, targetBaseUrl: getEnv('FEEDBACK_ANALYTICS_SERVICE_URL', 'http://localhost:3004') }).catch(next);
   });
 
   app.use((err, _req, res, _next) => {

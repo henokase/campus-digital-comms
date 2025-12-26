@@ -5,6 +5,8 @@ async function forwardRequest({ req, res, targetBaseUrl }) {
   for (const [k, v] of Object.entries(req.headers)) {
     if (v === undefined) continue;
     if (k.toLowerCase() === 'host') continue;
+    if (k.toLowerCase() === 'content-length') continue;
+    if (k.toLowerCase() === 'connection') continue;
     headers[k] = v;
   }
 

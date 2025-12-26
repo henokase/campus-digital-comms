@@ -20,6 +20,7 @@ function isPublicRoute(req) {
   if (req.path === '/health') return true;
   if (req.method === 'POST' && req.path === '/api/auth/register') return true;
   if (req.method === 'POST' && req.path === '/api/auth/login') return true;
+  if (req.method === 'GET' && (req.path === '/api/announcements' || req.path.startsWith('/api/announcements/'))) return true;
   return false;
 }
 
