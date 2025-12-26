@@ -1,40 +1,48 @@
-const express = require('express');
-const cors = require('cors');
 require('dotenv').config();
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+const { Pool } = require('pg');
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'announcement-service' });
-});
+const { createApp } = require('./app');
+const { createPublisher } = require('./publisher');
 
-app.post('/api/announcements', (_req, res) => {
-  res.status(501).json({ message: 'Not implemented: create announcement' });
-});
+function getDbConfigFromEnv() {
+  const host = process.env.DB_HOST;
+  const port = Number(process.env.DB_PORT || 5432);
+  const database = process.env.DB_NAME;
+  const user = process.env.DB_USER;
+  const password = process.env.DB_PASSWORD;
+  return { host, port, database, user, password };
+}
 
-app.get('/api/announcements', (_req, res) => {
-  res.status(501).json({ message: 'Not implemented: list announcements' });
-});
+async function main() {
+  const pool = new Pool(getDbConfigFromEnv());
+  const publisher = await createPublisher();
 
-app.get('/api/announcements/:id', (req, res) => {
-  res.status(501).json({ message: `Not implemented: get announcement ${req.params.id}` });
-});
+  const app = createApp({ pool, publisher });
+  const port = Number(process.env.PORT || 3002);
 
-app.put('/api/announcements/:id', (req, res) => {
-  res.status(501).json({ message: `Not implemented: update announcement ${req.params.id}` });
-});
+  const server = app.listen(port, () => {
+    console.log(`announcement-service listening on ${port}`);
+  });
 
-app.delete('/api/announcements/:id', (req, res) => {
-  res.status(501).json({ message: `Not implemented: delete announcement ${req.params.id}` });
-});
+  async function shutdown() {
+    try {
+      server.close();
+    } catch {}
+    try {
+      await publisher.close();
+    } catch {}
+    try {
+      await pool.end();
+    } catch {}
+    process.exit(0);
+  }
 
-app.post('/api/announcements/:id/publish', (req, res) => {
-  res.status(501).json({ message: `Not implemented: publish announcement ${req.params.id}` });
-});
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+}
 
-const port = Number(process.env.PORT || 3002);
-app.listen(port, () => {
-  console.log(`announcement-service listening on ${port}`);
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
