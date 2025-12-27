@@ -19,9 +19,22 @@ function buildEnvelope({ eventType, data }) {
   };
 }
 
+async function connectRabbitWithRetry(url, { attempts = 30 } = {}) {
+  let lastErr;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await amqplib.connect(url);
+    } catch (err) {
+      lastErr = err;
+      await new Promise((r) => setTimeout(r, Math.min(250 * attempt, 3000)));
+    }
+  }
+  throw lastErr || new Error('Failed to connect to RabbitMQ');
+}
+
 async function createPublisher() {
   const url = requireEnv('RABBITMQ_URL');
-  const conn = await amqplib.connect(url);
+  const conn = await connectRabbitWithRetry(url);
   const ch = await conn.createChannel();
   await ch.assertExchange(EXCHANGE_NAME, 'topic', { durable: true });
 
@@ -36,26 +49,6 @@ async function createPublisher() {
   }
 
   return {
-    async publishAnnouncementCreated({ announcement }) {
-      const envelope = buildEnvelope({
-        eventType: 'announcement.created',
-        data: {
-          announcementId: announcement.id,
-          title: announcement.title,
-          content: announcement.content,
-          type: announcement.type,
-          category: announcement.category,
-          priority: announcement.priority,
-          createdBy: announcement.createdBy,
-          targetAudience: announcement.targetAudience,
-          publishedAt: announcement.publishedAt,
-        },
-      });
-
-      await publish({ routingKey: envelope.eventType, message: envelope });
-      return envelope;
-    },
-
     async publishAnnouncementUpdated({ announcement }) {
       const envelope = buildEnvelope({
         eventType: 'announcement.updated',
@@ -77,9 +70,9 @@ async function createPublisher() {
       return envelope;
     },
 
-    async publishAnnouncementDeleted({ announcement }) {
+    async publishAnnouncementPublished({ announcement }) {
       const envelope = buildEnvelope({
-        eventType: 'announcement.deleted',
+        eventType: 'announcement.published',
         data: {
           announcementId: announcement.id,
           title: announcement.title,

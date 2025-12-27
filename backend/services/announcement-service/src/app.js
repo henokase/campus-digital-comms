@@ -140,10 +140,6 @@ function createApp({ pool, publisher }) {
 
       const announcement = toAnnouncement(created.rows[0]);
 
-      if (publisher) {
-        await publisher.publishAnnouncementCreated({ announcement });
-      }
-
       return res.status(201).json({ announcement });
     } catch (err) {
       return sendError(res, 500, 'INTERNAL_ERROR', 'Unexpected error.', { message: err.message });
@@ -248,7 +244,7 @@ function createApp({ pool, publisher }) {
 
       const announcement = toAnnouncement(updated.rows[0]);
 
-      if (publisher) {
+      if (publisher && announcement.status !== 'draft') {
         await publisher.publishAnnouncementUpdated({ announcement });
       }
 
@@ -287,10 +283,6 @@ function createApp({ pool, publisher }) {
       }
 
       const announcement = toAnnouncement(deleted.rows[0]);
-
-      if (publisher) {
-        await publisher.publishAnnouncementDeleted({ announcement });
-      }
 
       return res.status(200).json({ announcement });
     } catch (err) {
@@ -348,6 +340,10 @@ function createApp({ pool, publisher }) {
       }
 
       const announcement = toAnnouncement(updated.rows[0]);
+
+      if (publisher) {
+        await publisher.publishAnnouncementPublished({ announcement });
+      }
 
       return res.status(200).json({ announcement });
     } catch (err) {
