@@ -17,10 +17,8 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3001/api/auth/register",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": "{{gatewayBaseUrl}}/api/auth/register",
+          "host": ["{{gatewayBaseUrl}}"],
           "path": ["api", "auth", "register"]
         },
         "body": {
@@ -41,10 +39,8 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3001/api/auth/register",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": "{{gatewayBaseUrl}}/api/auth/register",
+          "host": ["{{gatewayBaseUrl}}"],
           "path": ["api", "auth", "register"]
         },
         "body": {
@@ -87,10 +83,8 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3001/api/auth/login",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": "{{gatewayBaseUrl}}/api/auth/login",
+          "host": ["{{gatewayBaseUrl}}"],
           "path": ["api", "auth", "login"]
         },
         "body": {
@@ -111,10 +105,8 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3001/api/auth/login",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": "{{gatewayBaseUrl}}/api/auth/login",
+          "host": ["{{gatewayBaseUrl}}"],
           "path": ["api", "auth", "login"]
         },
         "body": {
@@ -136,10 +128,8 @@
           }
         ],
         "url": {
-          "raw": "http://localhost:3001/api/auth/profile",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": "{{gatewayBaseUrl}}/api/auth/profile",
+          "host": ["{{gatewayBaseUrl}}"],
           "path": ["api", "auth", "profile"]
         }
       },
@@ -151,15 +141,16 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3001/api/auth/profile",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "3001",
+          "raw": "{{gatewayBaseUrl}}/api/auth/profile",
+          "host": ["{{gatewayBaseUrl}}"],
           "path": ["api", "auth", "profile"]
         }
       },
       "response": []
     }
   ],
-  "variable": []
+  "variable": [
+    { "key": "gatewayBaseUrl", "value": "http://localhost:3000" },
+    { "key": "authToken", "value": "" }
+  ]
 }

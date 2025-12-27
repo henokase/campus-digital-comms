@@ -1,3 +1,5 @@
+name: campus-digital-comms
+
 services:
   postgres:
     image: postgres:14
@@ -25,6 +27,11 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
   db-migrate:
     image: node:22-alpine
@@ -81,7 +88,12 @@ services:
           ignore:
             - node_modules/
     depends_on:
-      - auth-service
+      auth-service:
+        condition: service_healthy
+      announcement-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
 
   auth-service:
     build:
@@ -107,6 +119,11 @@ services:
             - node_modules/
     depends_on:
       - postgres
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
 
   announcement-service:
     build:
@@ -121,6 +138,7 @@ services:
       DB_USER: ${DB_USER:-cdcp_user}
       DB_PASSWORD: ${DB_PASSWORD:-1234}
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://cdcp_user:1234@rabbitmq:5672}
+      JWT_SECRET: ${JWT_SECRET:-45678fgchjbklt67y8u}
     ports:
       - "3002:3002"
     develop:
@@ -131,8 +149,15 @@ services:
           ignore:
             - node_modules/
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
 
   notification-service:
     build:
@@ -157,8 +182,15 @@ services:
           ignore:
             - node_modules/
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3003/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
 
   feedback-analytics-service:
     build:
@@ -190,3 +222,7 @@ volumes:
   postgres-data:
   rabbitmq-data:
   backend-node-modules:
+
+networks:
+  default:
+    name: campus-digital-comms_default
