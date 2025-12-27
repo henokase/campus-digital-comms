@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS "notifications"."Notification" (
   "announcementId" UUID NOT NULL,
   "userId" UUID NOT NULL,
   "channel" TEXT NOT NULL,
+  "sourceEventId" TEXT NOT NULL,
   "status" TEXT NOT NULL,
   "sentAt" TIMESTAMP(3),
   "readAt" TIMESTAMP(3),
@@ -56,8 +57,17 @@ CREATE TABLE IF NOT EXISTS "notifications"."Notification" (
   CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS "Notification_announcementId_userId_channel_key"
-ON "notifications"."Notification"("announcementId", "userId", "channel");
+CREATE UNIQUE INDEX IF NOT EXISTS "Notification_announcementId_userId_channel_sourceEventId_key"
+ON "notifications"."Notification"("announcementId", "userId", "channel", "sourceEventId");
+
+-- notifications.NotificationProcessedEvent
+CREATE TABLE IF NOT EXISTS "notifications"."NotificationProcessedEvent" (
+  "eventId" TEXT NOT NULL,
+  "eventType" TEXT NOT NULL,
+  "processedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "NotificationProcessedEvent_pkey" PRIMARY KEY ("eventId")
+);
 
 -- engagement.Feedback
 CREATE TABLE IF NOT EXISTS "engagement"."Feedback" (

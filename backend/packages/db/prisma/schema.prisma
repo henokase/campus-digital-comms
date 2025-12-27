@@ -45,6 +45,7 @@ model Notification {
   announcementId String   @db.Uuid
   userId         String   @db.Uuid
   channel        String
+  sourceEventId  String
   status         String
   sentAt         DateTime?
   readAt         DateTime?
@@ -52,7 +53,15 @@ model Notification {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  @@unique([announcementId, userId, channel])
+  @@unique([announcementId, userId, channel, sourceEventId])
+  @@schema("notifications")
+}
+
+model NotificationProcessedEvent {
+  eventId     String   @id
+  eventType   String
+  processedAt DateTime @default(now())
+
   @@schema("notifications")
 }
 
