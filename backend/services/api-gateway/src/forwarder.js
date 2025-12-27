@@ -10,6 +10,11 @@ async function forwardRequest({ req, res, targetBaseUrl }) {
     headers[k] = v;
   }
 
+  if (req.user) {
+    if (req.user.userId && !headers['x-user-id']) headers['x-user-id'] = String(req.user.userId);
+    if (req.user.role && !headers['x-user-role']) headers['x-user-role'] = String(req.user.role);
+  }
+
   const init = {
     method: req.method,
     headers,
