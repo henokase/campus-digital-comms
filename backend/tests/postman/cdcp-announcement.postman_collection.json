@@ -1,0 +1,313 @@
+{
+  "info": {
+    "name": "CDCP Announcement Service (via API Gateway)",
+    "_postman_id": "cdcp-announcement-service-collection",
+    "description": "Comprehensive Postman collection to test CDCP Announcement Service CRUD + publish (Phase 4). Runs via API Gateway so auth/RBAC is exercised.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Register Faculty (success)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/auth/register",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "auth", "register"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"faculty_postman_{{ts}}@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"faculty\",\n  \"fullName\": \"Faculty Postman\",\n  \"department\": \"Software\",\n  \"year\": 0\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Timestamp to avoid collisions",
+              "pm.collectionVariables.set('ts', Date.now());"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Auth - Register Student (success)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/auth/register",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "auth", "register"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"student_postman_{{ts}}@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"student\",\n  \"fullName\": \"Student Postman\",\n  \"department\": \"Software\",\n  \"year\": 2\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth - Login Student (saves student token)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/auth/login",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"student_postman_{{ts}}@example.com\",\n  \"password\": \"Password123!\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.collectionVariables.set('studentToken', json.token);"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Auth - Login Faculty (saves token)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/auth/login",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "auth", "login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"faculty_postman_{{ts}}@example.com\",\n  \"password\": \"Password123!\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "var json = pm.response.json();",
+              "pm.test('token exists', function () { pm.expect(json).to.have.property('token'); });",
+              "pm.collectionVariables.set('authToken', json.token);"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Announcements - Create (success)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Announcement {{ts}}\",\n  \"content\": \"Hello world\",\n  \"type\": \"general\",\n  \"category\": \"Test\",\n  \"priority\": \"normal\",\n  \"targetAudience\": {\n    \"roles\": [\"student\"],\n    \"departments\": [\"Software\"],\n    \"years\": [1, 2, 3]\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "var json = pm.response.json();",
+              "pm.test('response has announcement with id', function () { pm.expect(json).to.have.property('announcement'); pm.expect(json.announcement).to.have.property('id'); });",
+              "if (json && json.announcement && json.announcement.id) { pm.collectionVariables.set('announcementId', json.announcement.id); }"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Announcements - Create (missing token, expect 401)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"No Auth\",\n  \"content\": \"No Auth\",\n  \"type\": \"general\",\n  \"priority\": \"normal\",\n  \"targetAudience\": {\"roles\": [\"student\"]}\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - Create (student token, expect 403)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{studentToken}}" }
+        ],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Student Forbidden\",\n  \"content\": \"Student Forbidden\",\n  \"type\": \"general\",\n  \"priority\": \"normal\",\n  \"targetAudience\": {\"roles\": [\"student\"]}\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - List (success)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - Get by id (success)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements/{{announcementId}}",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements", "{{announcementId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - Update (success)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements/{{announcementId}}",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements", "{{announcementId}}"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Updated {{ts}}\",\n  \"content\": \"Updated Content\",\n  \"type\": \"general\",\n  \"category\": \"Test\",\n  \"priority\": \"high\",\n  \"targetAudience\": {\"roles\": [\"student\"]}\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - Publish (success)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements/{{announcementId}}/publish",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements", "{{announcementId}}", "publish"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - Update After Publish (success)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements/{{announcementId}}",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements", "{{announcementId}}"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Updated After Publish {{ts}}\",\n  \"content\": \"Updated After Publish Content\",\n  \"type\": \"general\",\n  \"category\": \"Test\",\n  \"priority\": \"high\",\n  \"targetAudience\": {\"roles\": [\"student\"]}\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - Re-Publish (idempotent, success)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements/{{announcementId}}/publish",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements", "{{announcementId}}", "publish"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - Publish (non-existent id, expect 404)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements/00000000-0000-0000-0000-000000000000/publish",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements", "00000000-0000-0000-0000-000000000000", "publish"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Announcements - Delete (success)",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+        "url": {
+          "raw": "{{gatewayBaseUrl}}/api/announcements/{{announcementId}}",
+          "host": ["{{gatewayBaseUrl}}"],
+          "path": ["api", "announcements", "{{announcementId}}"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "gatewayBaseUrl", "value": "http://localhost:3000" },
+    { "key": "authToken", "value": "" },
+    { "key": "studentToken", "value": "" },
+    { "key": "announcementId", "value": "" },
+    { "key": "ts", "value": "" }
+  ]
+}
