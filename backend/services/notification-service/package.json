@@ -9,8 +9,13 @@
     "test": "node -e \"console.log('notification-service tests: TODO')\""
   },
   "dependencies": {
+    "amqplib": "^0.10.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
