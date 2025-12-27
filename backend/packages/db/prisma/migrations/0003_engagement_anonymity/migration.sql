@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS "engagement"."Feedback"
+ADD COLUMN IF NOT EXISTS "isAnonymous" BOOLEAN NOT NULL DEFAULT false;

@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS "engagement"."Feedback" (
   "reactionType" TEXT NOT NULL,
   "comment" TEXT,
   "rating" INTEGER,
+  "isAnonymous" BOOLEAN NOT NULL DEFAULT false,
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP(3) NOT NULL,
 
