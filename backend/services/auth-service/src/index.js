@@ -140,7 +140,7 @@ app.get('/api/auth/profile', async (req, res) => {
     );
 
     if (result.rowCount === 0) {
-      return sendError(res, 404, 'NOT_FOUND', 'User not found.');
+      return sendError(res, 401, 'UNAUTHORIZED', 'Invalid token.');
     }
 
     return res.status(200).json({ user: toPublicUser(result.rows[0]) });

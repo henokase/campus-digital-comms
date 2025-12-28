@@ -34,6 +34,8 @@ Thumbs.db
 *.orig
 *.min.*
 */node_modules/
+/package-lock.json
+*/package-lock.json
 /bower_components/
 /coverage/
 
