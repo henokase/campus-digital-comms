@@ -1,4 +1,4 @@
-# CDCP — Architecture and Design (SDD-Style)
+# CDCP — Architecture and Design
 
 ## 1. Document purpose
 This document is the **system design description (SDD-style)** for the Campus Digital Communication Platform (CDCP). It is intended to be sufficiently explicit for a new engineer to:
