@@ -1,4 +1,18 @@
-# Campus Digital Communication Platform (CDCP)
+<p align="center">
+  <img src="./frontend/src/assets/logo.png" alt="Project Logo" width="120"/>
+</p>
+
+<p align="center" style="font-size: 27px; font-weight: bold;">Campus Digital Communication Platform (CDCP)</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg"/>
+  <img src="https://img.shields.io/badge/Made%20with-TypeScript%20%26%20JavaScript-3178C6?logo=typescript&logoColor=white&labelColor=F7DF1E&color=3178C6"/>
+  <img src="https://img.shields.io/badge/Node.js-Enabled-green?logo=node.js&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Powered%20by-Express-black?logo=express&logoColor=white"/>
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen"/>
+</p>
+
+---
 
 CDCP is a distributed, event-driven campus communication system that supports:
 - announcements (create/update/publish)
