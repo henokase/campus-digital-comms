@@ -2,7 +2,7 @@
   <img src="./frontend/src/assets/logo.png" alt="Project Logo" width="120"/>
 </p>
 
-<p align="center" style="font-size: 27px; font-weight: bold;">Campus Digital Communication Platform (CDCP)</p>
+<h1 align="center">Campus Digital Communication Platform (CDCP)</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg"/>
